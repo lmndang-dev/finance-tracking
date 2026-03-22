@@ -3,4 +3,15 @@
 @theme inline {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  --color-primary: #3B3B98;
+  --color-secondary: #4B6584;
+  --color-background: #F5F5F7;
+  --color-surface: #FFFFFF;
+  --color-income: #A8E6CF;
+  --color-expense: #FC5C65;
+}
+
+body {
+  background: var(--color-background);
 }
