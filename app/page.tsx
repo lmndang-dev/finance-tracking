@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 const transactions = [
   { label: "Salary", amount: "+$6,000", type: "income" },
   { label: "Freelance", amount: "+$2,240", type: "income" },
@@ -19,18 +21,18 @@ export default function Home() {
             <span className="text-primary font-bold text-xl">FinTrack</span>
           </div>
           <div className="flex items-center gap-3">
-            <a
+            <Link
               href="/login"
               className="px-5 py-2 text-primary font-medium rounded-full border border-primary hover:bg-primary hover:text-white transition-colors text-sm"
             >
               Log In
-            </a>
-            <a
+            </Link>
+            <Link
               href="/signup"
               className="px-5 py-2 bg-primary text-white font-medium rounded-full hover:bg-[#2d2d7a] transition-colors text-sm"
             >
               Sign Up
-            </a>
+            </Link>
           </div>
         </div>
       </nav>
@@ -49,18 +51,18 @@ export default function Home() {
           certified finance advisors — all in one place.
         </p>
         <div className="flex gap-4 flex-wrap justify-center">
-          <a
+          <Link
             href="/signup"
             className="px-8 py-3.5 bg-primary text-white font-semibold rounded-full hover:bg-[#2d2d7a] transition-colors shadow-md"
           >
             Get Started Free
-          </a>
-          <a
+          </Link>
+          <Link
             href="#features"
             className="px-8 py-3.5 border border-secondary text-secondary font-semibold rounded-full hover:bg-surface transition-colors"
           >
             See How It Works
-          </a>
+          </Link>
         </div>
 
         {/* Preview card */}
@@ -227,18 +229,18 @@ export default function Home() {
             finances.
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
-            <a
+            <Link
               href="/signup"
               className="px-8 py-3.5 bg-primary text-white font-semibold rounded-full hover:bg-[#2d2d7a] transition-colors shadow-md"
             >
               Create Free Account
-            </a>
-            <a
+            </Link>
+            <Link
               href="/login"
               className="px-8 py-3.5 border border-primary text-primary font-semibold rounded-full hover:bg-surface transition-colors"
             >
               Log In
-            </a>
+            </Link>
           </div>
         </div>
       </section>
