@@ -1,6 +1,28 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
+
+const inputBase =
+  "w-full px-4 py-3 rounded-xl border bg-background text-primary placeholder-secondary/60 text-sm focus:outline-none focus:ring-2 transition";
+
+function inputClass(error: string | null, touched: boolean) {
+  if (!touched) return `${inputBase} border-background focus:ring-primary/30 focus:border-primary`;
+  if (error) return `${inputBase} border-expense/60 focus:ring-expense/20 focus:border-expense`;
+  return `${inputBase} border-income focus:ring-income/30 focus:border-income`;
+}
 
 export default function LoginPage() {
+  const [email, setEmail] = useState("");
+  const [emailTouched, setEmailTouched] = useState(false);
+  const [password, setPassword] = useState("");
+
+  const emailError = emailTouched && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+    ? "Enter a valid email address"
+    : null;
+
+  const isValid = !emailError && email !== "" && password !== "";
+
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4">
 
@@ -17,8 +39,9 @@ export default function LoginPage() {
         <h1 className="text-2xl font-bold text-primary mb-1">Welcome back</h1>
         <p className="text-secondary text-sm mb-8">Log in to your FinTrack account</p>
 
-        <form className="flex flex-col gap-5">
+        <form className="flex flex-col gap-5" onSubmit={(e) => e.preventDefault()}>
 
+          {/* Email */}
           <div className="flex flex-col gap-1.5">
             <label htmlFor="email" className="text-sm font-medium text-primary">
               Email
@@ -27,10 +50,16 @@ export default function LoginPage() {
               id="email"
               type="email"
               placeholder="you@example.com"
-              className="w-full px-4 py-3 rounded-xl border border-background bg-background text-primary placeholder-secondary/60 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
+              value={email}
+              onChange={(e) => { setEmail(e.target.value); setEmailTouched(true); }}
+              className={inputClass(emailError, emailTouched)}
             />
+            {emailError && (
+              <p className="text-xs text-expense">{emailError}</p>
+            )}
           </div>
 
+          {/* Password */}
           <div className="flex flex-col gap-1.5">
             <div className="flex justify-between items-center">
               <label htmlFor="password" className="text-sm font-medium text-primary">
@@ -44,13 +73,18 @@ export default function LoginPage() {
               id="password"
               type="password"
               placeholder="••••••••"
-              className="w-full px-4 py-3 rounded-xl border border-background bg-background text-primary placeholder-secondary/60 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className={`${inputBase} border-background focus:ring-primary/30 focus:border-primary`}
             />
           </div>
 
+          {/* Submit */}
           <button
             type="submit"
-            className="w-full py-3.5 bg-primary text-white font-semibold rounded-xl hover:bg-[#2d2d7a] transition-colors mt-1 shadow-sm"
+            disabled={!isValid}
+            className="w-full py-3.5 bg-primary text-white font-semibold rounded-xl transition-colors mt-1 shadow-sm
+              enabled:hover:bg-[#2d2d7a] disabled:opacity-40 disabled:cursor-not-allowed"
           >
             Log In
           </button>
