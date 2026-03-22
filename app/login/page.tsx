@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { signIn } from "next-auth/react";
 
 const inputBase =
   "w-full px-4 py-3 rounded-xl border bg-background text-primary placeholder-secondary/60 text-sm focus:outline-none focus:ring-2 transition";
@@ -13,15 +15,46 @@ function inputClass(error: string | null, touched: boolean) {
 }
 
 export default function LoginPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [emailTouched, setEmailTouched] = useState(false);
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
 
   const emailError = emailTouched && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
     ? "Enter a valid email address"
     : null;
 
   const isValid = !emailError && email !== "" && password !== "";
+
+  const verified = searchParams.get("verified") === "1";
+  const urlError = searchParams.get("error");
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!isValid) return;
+    setLoading(true);
+    setServerError(null);
+    const result = await signIn("credentials", { email, password, redirect: false });
+    setLoading(false);
+    if (!result || result.error) {
+      const check = await fetch("/api/auth/check-verified", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const { status } = await check.json();
+      if (status === "unverified") {
+        setServerError("Your email is not verified. Please check your inbox for the verification link.");
+      } else {
+        setServerError("Invalid email or password.");
+      }
+    } else {
+      router.push("/dashboard");
+    }
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4">
@@ -39,7 +72,18 @@ export default function LoginPage() {
         <h1 className="text-2xl font-bold text-primary mb-1">Welcome back</h1>
         <p className="text-secondary text-sm mb-8">Log in to your FinTrack account</p>
 
-        <form className="flex flex-col gap-5" onSubmit={(e) => e.preventDefault()}>
+        {verified && (
+          <p className="text-sm text-[#1a7a52] bg-income/20 rounded-xl px-4 py-3 mb-2">
+            Email verified! You can now log in.
+          </p>
+        )}
+        {urlError === "CredentialsSignin" && !serverError && (
+          <p className="text-sm text-expense bg-expense/10 rounded-xl px-4 py-3 mb-2">
+            Invalid email or password.
+          </p>
+        )}
+
+        <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
 
           {/* Email */}
           <div className="flex flex-col gap-1.5">
@@ -65,7 +109,7 @@ export default function LoginPage() {
               <label htmlFor="password" className="text-sm font-medium text-primary">
                 Password
               </label>
-              <Link href="#" className="text-xs text-secondary hover:text-primary transition-colors">
+              <Link href="/forgot-password" className="text-xs text-secondary hover:text-primary transition-colors">
                 Forgot password?
               </Link>
             </div>
@@ -79,14 +123,18 @@ export default function LoginPage() {
             />
           </div>
 
+          {serverError && (
+            <p className="text-sm text-expense bg-expense/10 rounded-xl px-4 py-3">{serverError}</p>
+          )}
+
           {/* Submit */}
           <button
             type="submit"
-            disabled={!isValid}
+            disabled={!isValid || loading}
             className="w-full py-3.5 bg-primary text-white font-semibold rounded-xl transition-colors mt-1 shadow-sm
               enabled:hover:bg-[#2d2d7a] disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            Log In
+            {loading ? "Logging in…" : "Log In"}
           </button>
 
         </form>

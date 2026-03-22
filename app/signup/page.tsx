@@ -50,6 +50,9 @@ function inputClass(error: string | null, touched: boolean) {
 export default function SignupPage() {
   const [fields, setFields] = useState<Fields>({ name: "", email: "", password: "", confirm: "" });
   const [touched, setTouched] = useState<Touched>({ name: false, email: false, password: false, confirm: false });
+  const [loading, setLoading] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
 
   const errors = {
     name: validateName(fields.name),
@@ -64,6 +67,30 @@ export default function SignupPage() {
   function handleChange(field: keyof Fields, value: string) {
     setFields((prev) => ({ ...prev, [field]: value }));
     setTouched((prev) => ({ ...prev, [field]: true }));
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!isValid) return;
+    setLoading(true);
+    setServerError(null);
+    try {
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: fields.name.trim(), email: fields.email, password: fields.password }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setServerError(data.error ?? "Something went wrong. Please try again.");
+      } else {
+        setSuccess(true);
+      }
+    } catch {
+      setServerError("Network error. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   const passwordRules = [
@@ -89,7 +116,19 @@ export default function SignupPage() {
         <h1 className="text-2xl font-bold text-primary mb-1">Create your account</h1>
         <p className="text-secondary text-sm mb-8">Start tracking your finances for free</p>
 
-        <form className="flex flex-col gap-5" onSubmit={(e) => e.preventDefault()}>
+        {success ? (
+          <div className="text-center py-6">
+            <div className="w-14 h-14 bg-income/30 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-7 h-7 text-[#1a7a52]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h2 className="text-lg font-bold text-primary mb-2">Check your inbox</h2>
+            <p className="text-secondary text-sm">We sent a verification link to <span className="font-medium text-primary">{fields.email}</span>. Click it to activate your account.</p>
+            <Link href="/login" className="inline-block mt-6 text-sm text-primary font-semibold hover:underline">Back to Log In</Link>
+          </div>
+        ) : (
+        <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
 
           {/* Full Name */}
           <div className="flex flex-col gap-1.5">
@@ -175,24 +214,31 @@ export default function SignupPage() {
             )}
           </div>
 
+          {serverError && (
+            <p className="text-sm text-expense bg-expense/10 rounded-xl px-4 py-3">{serverError}</p>
+          )}
+
           {/* Submit */}
           <button
             type="submit"
-            disabled={!isValid}
+            disabled={!isValid || loading}
             className="w-full py-3.5 bg-primary text-white font-semibold rounded-xl transition-colors mt-1 shadow-sm
               enabled:hover:bg-[#2d2d7a] disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            Create Account
+            {loading ? "Creating account…" : "Create Account"}
           </button>
 
         </form>
+        )}
 
-        <p className="text-center text-sm text-secondary mt-6">
-          Already have an account?{" "}
-          <Link href="/login" className="text-primary font-semibold hover:underline">
-            Log In
-          </Link>
-        </p>
+        {!success && (
+          <p className="text-center text-sm text-secondary mt-6">
+            Already have an account?{" "}
+            <Link href="/login" className="text-primary font-semibold hover:underline">
+              Log In
+            </Link>
+          </p>
+        )}
       </div>
 
       <p className="text-xs text-secondary mt-8">© 2026 FinTrack. All rights reserved.</p>
