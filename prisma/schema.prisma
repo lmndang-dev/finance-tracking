@@ -10,20 +10,39 @@ datasource db {
   provider = "postgresql"
 }
 
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
 enum Role {
   USER
   ADMIN
 }
 
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+enum RecurringType {
+  SUBSCRIPTION
+  BILL
+  SALARY
+  LOAN_PAYMENT
+  RENT
+  OTHER
+}
+
+// ─── Auth ─────────────────────────────────────────────────────────────────────
+
 model User {
-  id            String    @id @default(uuid())
-  email         String    @unique
+  id            String        @id @default(uuid())
+  email         String        @unique
   password      String
   name          String
-  role          Role      @default(USER)
+  role          Role          @default(USER)
   emailVerified DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  transactions  Transaction[]
 }
 
 model PasswordResetToken {
@@ -32,4 +51,50 @@ model PasswordResetToken {
   token     String   @unique
   expiresAt DateTime
   createdAt DateTime @default(now())
+}
+
+// ─── Categories (system-defined, fixed) ───────────────────────────────────────
+
+model Category {
+  id            String          @id @default(uuid())
+  name          String
+  type          TransactionType
+  icon          String
+  order         Int
+  subcategories Subcategory[]
+  transactions  Transaction[]
+
+  @@unique([name, type])
+}
+
+model Subcategory {
+  id           String        @id @default(uuid())
+  name         String
+  icon         String?
+  order        Int
+  categoryId   String
+  category     Category      @relation(fields: [categoryId], references: [id])
+  transactions Transaction[]
+
+  @@unique([name, categoryId])
+}
+
+// ─── Transactions ─────────────────────────────────────────────────────────────
+
+model Transaction {
+  id            String          @id @default(uuid())
+  userId        String
+  user          User            @relation(fields: [userId], references: [id])
+  type          TransactionType
+  categoryId    String
+  category      Category        @relation(fields: [categoryId], references: [id])
+  subcategoryId String?
+  subcategory   Subcategory?    @relation(fields: [subcategoryId], references: [id])
+  amount        Decimal         @db.Decimal(12, 2)
+  date          DateTime
+  note          String?
+  isRecurring   Boolean         @default(false)
+  recurringType RecurringType?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
 }
