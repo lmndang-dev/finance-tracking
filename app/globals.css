@@ -10,6 +10,18 @@
   --color-surface: #FFFFFF;
   --color-income: #A8E6CF;
   --color-expense: #FC5C65;
+
+  /* Chart category colors */
+  --color-chart-food: #F7B731;
+  --color-chart-transport: #4B6584;
+  --color-chart-shopping: #fd9644;
+  --color-chart-housing: #3B3B98;
+  --color-chart-health: #FC5C65;
+  --color-chart-entertainment: #a55eea;
+  --color-chart-education: #45aaf2;
+  --color-chart-travel: #2bcbba;
+  --color-chart-personal: #ff6b9d;
+  --color-chart-others: #b2bec3;
 }
 
 body {
